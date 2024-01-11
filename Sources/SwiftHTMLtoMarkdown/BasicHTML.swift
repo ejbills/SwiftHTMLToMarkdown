@@ -108,6 +108,48 @@ public class BasicHTML: HTML {
                 markdown += "\n```"
                 return
             }
+        } else if node.nodeName() == "blockquote" {
+            // Blockquote conversion
+            markdown += "> "
+            for child in node.getChildNodes() {
+                try convertNode(child)
+            }
+            markdown += "\n\n"
+        } else if node.nodeName() == "ul" || node.nodeName() == "ol" {
+            // List conversion
+            for child in node.getChildNodes() {
+                try convertNode(child)
+            }
+            markdown += "\n"
+        } else if node.nodeName() == "li" {
+            // List item conversion
+            if node.parentNode()?.nodeName() == "ul" {
+                markdown += "- "
+            } else if node.parentNode()?.nodeName() == "ol" {
+                if let index = node.parent()?.getElementsByTag("li").index(of: node) {
+                    markdown += "\(index + 1). "
+                }
+            }
+            for child in node.getChildNodes() {
+                try convertNode(child)
+            }
+            markdown += "\n"
+        } else if node.nodeName() == "img" {
+            // Image conversion
+            if let src = try? node.attr("src") {
+                markdown += "![Alt Text](\(src))"
+            }
+        } else if node.nodeName() == "hr" {
+            // Horizontal rule conversion
+            markdown += "\n---\n"
+        }
+
+        if node.nodeName() == "#text" && node.description != " " {
+            markdown += node.description
+        }
+
+        for child in node.getChildNodes() {
+            try convertNode(child)
         }
 
         if node.nodeName() == "#text" && node.description != " " {
